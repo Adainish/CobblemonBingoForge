@@ -2,8 +2,7 @@ package io.github.adainish.cobblemonbingoforge;
 
 import ca.landonjw.gooeylibs2.api.tasks.Task;
 import com.cobblemon.mod.common.api.Priority;
-import com.cobblemon.mod.common.api.events.CobblemonEvents;
-import com.mojang.logging.LogUtils;
+import com.cobblemon.mod.common.platform.events.PlatformEvents;
 import io.github.adainish.cobblemonbingoforge.cmd.Command;
 import io.github.adainish.cobblemonbingoforge.conf.Config;
 import io.github.adainish.cobblemonbingoforge.conf.LanguageConfig;
@@ -13,33 +12,16 @@ import io.github.adainish.cobblemonbingoforge.subscriptions.EventSubscriptions;
 import io.github.adainish.cobblemonbingoforge.tasks.SavePlayerTask;
 import io.github.adainish.cobblemonbingoforge.wrapper.DataWrapper;
 import kotlin.Unit;
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.Material;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLConfig;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -56,7 +38,7 @@ public class CobblemonBingoForge {
 
     public static CobblemonBingoForge instance;
     public static final String MOD_NAME = "CobblemonBingo";
-    public static final String VERSION = "1.0.0-Beta";
+    public static final String VERSION = "1.1.0-Beta";
     public static final String AUTHORS = "Winglet";
     public static final String YEAR = "2023";
     private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(MOD_NAME);
@@ -125,8 +107,8 @@ public class CobblemonBingoForge {
                 .replace("%y", YEAR)
         );
 
-        CobblemonEvents.SERVER_STARTED.subscribe(Priority.NORMAL, minecraftServer -> {
-            setServer(minecraftServer);
+        PlatformEvents.SERVER_STARTED.subscribe(Priority.NORMAL, t -> {
+            setServer(t.getServer());
             dataWrapper = new DataWrapper();
             //load data from config
             reload();
@@ -136,7 +118,7 @@ public class CobblemonBingoForge {
             return Unit.INSTANCE;
         });
 
-        CobblemonEvents.SERVER_STOPPING.subscribe(Priority.NORMAL, minecraftServer -> {
+        PlatformEvents.SERVER_STOPPING.subscribe(Priority.NORMAL, t -> {
             List<Player> playerList = new ArrayList<>(CobblemonBingoForge.instance.dataWrapper.playerCache.values());
             playerList.forEach(player -> {
                 player.expireOldCards();

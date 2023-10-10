@@ -2,6 +2,7 @@ package io.github.adainish.cobblemonbingoforge.subscriptions;
 
 import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
+import com.cobblemon.mod.common.platform.events.PlatformEvents;
 import io.github.adainish.cobblemonbingoforge.obj.Player;
 import io.github.adainish.cobblemonbingoforge.storage.PlayerStorage;
 import kotlin.Unit;
@@ -16,27 +17,27 @@ public class EventSubscriptions
 
     public void loadPlayerSubscriptions()
     {
-        CobblemonEvents.PLAYER_JOIN.subscribe(Priority.NORMAL, serverPlayer -> {
+        PlatformEvents.SERVER_PLAYER_LOGIN.subscribe(Priority.NORMAL, serverPlayer -> {
 
-            Player player = PlayerStorage.getPlayer(serverPlayer.getUUID());
+            Player player = PlayerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
             if (player == null) {
-                PlayerStorage.makePlayer(serverPlayer.getUUID());
-                player = PlayerStorage.getPlayer(serverPlayer.getUUID());
+                PlayerStorage.makePlayer(serverPlayer.getPlayer().getUUID());
+                player = PlayerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
 
             }
 
             if (player != null) {
-                player.setUsername(serverPlayer.getName().getString());
+                player.setUsername(serverPlayer.getPlayer().getName().getString());
                 player.updateCache();
             }
 
             return Unit.INSTANCE;
         });
 
-        CobblemonEvents.PLAYER_QUIT.subscribe(Priority.NORMAL, serverPlayer -> {
+        PlatformEvents.SERVER_PLAYER_LOGOUT.subscribe(Priority.NORMAL, serverPlayer -> {
 
             if (serverPlayer != null) {
-                Player player = PlayerStorage.getPlayer(serverPlayer.getUUID());
+                Player player = PlayerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
                 if (player != null) {
                     player.save();
                 }
