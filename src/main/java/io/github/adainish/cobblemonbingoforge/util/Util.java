@@ -15,9 +15,6 @@ import java.util.UUID;
 
 public class Util
 {
-    public static final long HOUR_IN_MILLIS = 3600000;
-    public static final long MINUTE_IN_MILLIS = 60000;
-
     public static String formattedString(String s) {
         return s.replaceAll("&", "§");
     }
