@@ -5,9 +5,12 @@ import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.platform.events.PlatformEvents;
 import io.github.adainish.cobblemonbingoforge.cmd.Command;
 import io.github.adainish.cobblemonbingoforge.conf.Config;
+import io.github.adainish.cobblemonbingoforge.conf.DBConfig;
 import io.github.adainish.cobblemonbingoforge.conf.LanguageConfig;
 import io.github.adainish.cobblemonbingoforge.conf.RewardsConfig;
 import io.github.adainish.cobblemonbingoforge.obj.Player;
+import io.github.adainish.cobblemonbingoforge.storage.Database;
+import io.github.adainish.cobblemonbingoforge.storage.PlayerStorage;
 import io.github.adainish.cobblemonbingoforge.subscriptions.EventSubscriptions;
 import io.github.adainish.cobblemonbingoforge.tasks.SavePlayerTask;
 import io.github.adainish.cobblemonbingoforge.wrapper.DataWrapper;
@@ -81,10 +84,11 @@ public class CobblemonBingoForge {
     public static LanguageConfig languageConfig;
 
     public static RewardsConfig rewardsConfig;
-
+    public static DBConfig dbConfig;
     public static EventSubscriptions subscriptions;
 
-    public DataWrapper dataWrapper;
+    public static DataWrapper wrapper;
+    public static PlayerStorage playerStorage;
 
     // Directly reference a slf4j logger
     public CobblemonBingoForge() {
@@ -109,9 +113,17 @@ public class CobblemonBingoForge {
 
         PlatformEvents.SERVER_STARTED.subscribe(Priority.NORMAL, t -> {
             setServer(t.getServer());
-            dataWrapper = new DataWrapper();
+            wrapper = new DataWrapper();
+            playerStorage = new PlayerStorage();
             //load data from config
             reload();
+            if (dbConfig != null)
+            {
+                if (dbConfig.enabled)
+                {
+                    playerStorage.database = new Database();
+                }
+            }
             //register listeners
             subscriptions = new EventSubscriptions();
             Task.builder().interval(20 * 60).execute(new SavePlayerTask()).infinite().build();
@@ -119,11 +131,7 @@ public class CobblemonBingoForge {
         });
 
         PlatformEvents.SERVER_STOPPING.subscribe(Priority.NORMAL, t -> {
-            List<Player> playerList = new ArrayList<>(CobblemonBingoForge.instance.dataWrapper.playerCache.values());
-            playerList.forEach(player -> {
-                player.expireOldCards();
-                player.save();
-            });
+            this.handleShutDown();
             return Unit.INSTANCE;
         });
     }
@@ -154,19 +162,27 @@ public class CobblemonBingoForge {
 
     public void initConfigs() {
         log.warn("Loading Config Files");
-
         Config.writeConfig();
         config = Config.getConfig();
         LanguageConfig.writeConfig();
         languageConfig = LanguageConfig.getConfig();
         RewardsConfig.writeConfig();
         rewardsConfig = RewardsConfig.getConfig();
+        DBConfig.writeConfig();
+        dbConfig = DBConfig.getConfig();
         log.warn("Loaded Config files");
     }
 
     public void reload() {
         initDirs();
         initConfigs();
+    }
+
+    public void handleShutDown()
+    {
+        playerStorage.saveAll();
+        if (playerStorage.database != null)
+            playerStorage.database.shutdown();
     }
 
 

@@ -7,7 +7,6 @@ import io.github.adainish.cobblemonbingoforge.obj.Player;
 import io.github.adainish.cobblemonbingoforge.util.Adapters;
 import net.minecraft.server.level.ServerPlayer;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,121 +14,180 @@ import java.util.UUID;
 
 public class PlayerStorage
 {
-    public static void makePlayer(UUID uuid) {
-        File dir = CobblemonBingoForge.getPlayerStorageDir();
-        dir.mkdirs();
-
-
-        Player playerData = new Player(uuid);
-
-        File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(uuid)));
-        if (file.exists()) {
-            return;
-        }
-
-        Gson gson = Adapters.PRETTY_MAIN_GSON;
-        String json = gson.toJson(playerData);
-
-        try {
-            file.createNewFile();
-            FileWriter writer = new FileWriter(file);
-            writer.write(json);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public Database database;
+    public void saveAll()
+    {
+        CobblemonBingoForge.getLog().warn("Saving player data...");
+        CobblemonBingoForge.wrapper.playerCache.forEach((uuid, player) -> {
+            player.saveNoCache();
+        });
+        CobblemonBingoForge.wrapper.playerCache.clear();
     }
 
-    public static void makePlayer(ServerPlayer player) {
-        File dir = CobblemonBingoForge.getPlayerStorageDir();
-        dir.mkdirs();
-
-
-        Player playerData = new Player(player.getUUID());
-
-        File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(player.getUUID())));
-        if (file.exists()) {
-            return;
-        }
-
-        Gson gson = Adapters.PRETTY_MAIN_GSON;
-        String json = gson.toJson(playerData);
-
-        try {
-            file.createNewFile();
-            FileWriter writer = new FileWriter(file);
-            writer.write(json);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void savePlayer(Player player) {
+    public Player getPlayerFlatFile(UUID uuid) {
+        if (CobblemonBingoForge.wrapper.playerCache.containsKey(uuid))
+            return CobblemonBingoForge.wrapper.playerCache.get(uuid);
 
         File dir = CobblemonBingoForge.getPlayerStorageDir();
         dir.mkdirs();
 
-        File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(player.uuid)));
+
+        File dataFile = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(uuid)));
         Gson gson = Adapters.PRETTY_MAIN_GSON;
         JsonReader reader = null;
         try {
-            reader = new JsonReader(new FileReader(file));
+            reader = new JsonReader(new FileReader(dataFile));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            CobblemonBingoForge.getLog().error("Something went wrong attempting to read the Player Data, new Player Perhaps?");
+            return null;
+        }
+        return gson.fromJson(reader, Player.class);
+
+
+    }
+
+    public Player getPlayer(UUID uuid) {
+        if (CobblemonBingoForge.wrapper.playerCache.containsKey(uuid))
+            return CobblemonBingoForge.wrapper.playerCache.get(uuid);
+        if (CobblemonBingoForge.dbConfig.enabled) {
+            if (this.database != null) {
+                return this.database.getPlayer(uuid);
+            }
         }
 
-        if (reader == null) {
-            CobblemonBingoForge.getLog().error("Something went wrong attempting to read the Player Data");
-            return;
-        }
+        File dir = CobblemonBingoForge.getPlayerStorageDir();
+        dir.mkdirs();
 
 
+        File dataFile = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(uuid)));
+        Gson gson = Adapters.PRETTY_MAIN_GSON;
+        JsonReader reader = null;
         try {
-            FileWriter writer = new FileWriter(file);
-            writer.write(gson.toJson(player));
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            reader = new JsonReader(new FileReader(dataFile));
+        } catch (FileNotFoundException e) {
+            CobblemonBingoForge.getLog().error("Something went wrong attempting to read the Player Data, new Player Perhaps?");
+            return null;
+        }
+        return gson.fromJson(reader, Player.class);
+
+
+    }
+
+    public void savePlayer(Player player) {
+        if (CobblemonBingoForge.dbConfig.enabled) {
+            //save to db
+            if (this.database != null)
+            {
+                this.database.save(player);
+            }
+        } else {
+
+            File dir = CobblemonBingoForge.getPlayerStorageDir();
+            dir.mkdirs();
+
+            File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(player.uuid)));
+            Gson gson = Adapters.PRETTY_MAIN_GSON;
+            JsonReader reader = null;
+            try {
+                reader = new JsonReader(new FileReader(file));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            if (reader == null) {
+                CobblemonBingoForge.getLog().error("Something went wrong attempting to read the Player Data");
+                return;
+            }
+
+            try {
+                FileWriter writer = new FileWriter(file);
+                writer.write(gson.toJson(player));
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         player.updateCache();
     }
 
-    public static List<UUID> getAllPlayerUUIDS()
-    {
-        List<UUID> uuids = new ArrayList<>();
+    public void savePlayerNoCache(Player player) {
+        if (CobblemonBingoForge.dbConfig.enabled) {
+            if (this.database != null)
+            {
+                this.database.save(player);
+            }
+        } else {
 
-        File dir = CobblemonBingoForge.getPlayerStorageDir();
-        if (dir != null) {
-            for (File f : dir.listFiles()) {
-                UUID uuid;
-                try {
-                    uuid = UUID.fromString(f.getName().replace(".json", ""));
-                } catch (IllegalArgumentException e)
-                {
-                    continue;
-                }
+            File dir = CobblemonBingoForge.getPlayerStorageDir();
+            dir.mkdirs();
 
-                uuids.add(uuid);
+            File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(player.uuid)));
+            Gson gson = Adapters.PRETTY_MAIN_GSON;
+            JsonReader reader = null;
+            try {
+                reader = new JsonReader(new FileReader(file));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
 
+            if (reader == null) {
+                CobblemonBingoForge.getLog().error("Something went wrong attempting to read the Player Data");
+                return;
+            }
+
+            try {
+                FileWriter writer = new FileWriter(file);
+                writer.write(gson.toJson(this));
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-
-        return uuids;
     }
 
-    public static List<Player> getAllPlayers()
+    public void makePlayer(ServerPlayer player) {
+
+        Player dexPlayer = new Player(player.getUUID());
+        if (CobblemonBingoForge.dbConfig.enabled)
+        {
+            if (this.database != null)
+            {
+                this.database.makePlayer(player.getUUID());
+            }
+        } else {
+            File dir = CobblemonBingoForge.getPlayerStorageDir();
+            dir.mkdirs();
+
+
+            File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(player.getUUID())));
+            if (file.exists()) {
+                CobblemonBingoForge.getLog().error("There was an issue generating the Player, Player already exists? Ending function");
+                return;
+            }
+
+            Gson gson = Adapters.PRETTY_MAIN_GSON;
+            String json = gson.toJson(dexPlayer);
+
+            try {
+                file.createNewFile();
+                FileWriter writer = new FileWriter(file);
+                writer.write(json);
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public List<Player> getAllPlayersFromFiles(boolean database)
     {
 
         List<UUID> addedPlayers = new ArrayList<>();
 
         List<Player> playerList = new ArrayList<>();
 
-        for (Player p:CobblemonBingoForge.instance.dataWrapper.playerCache.values()) {
-            playerList.add(p);
-            addedPlayers.add(p.uuid);
-        }
 
         File dir = CobblemonBingoForge.getPlayerStorageDir();
         if (dir != null) {
@@ -139,39 +197,24 @@ public class PlayerStorage
                     uuid = UUID.fromString(f.getName().replace(".json", ""));
                 } catch (IllegalArgumentException e)
                 {
+                    e.printStackTrace();
                     continue;
                 }
                 if (addedPlayers.contains(uuid))
                     continue;
-                Player p = getPlayer(uuid);
-                if (p == null)
+                Player p;
+                if (database)
+                    p = getPlayer(uuid);
+                else p = getPlayerFlatFile(uuid);
+                if (p == null) {
+                    CobblemonBingoForge.getLog().warn("Failed retrieving data for %uuid%".replace("%uuid%", uuid.toString()));
                     continue;
+                }
                 playerList.add(p);
                 addedPlayers.add(uuid);
             }
         }
 
         return playerList;
-    }
-
-    @Nullable
-    public static Player getPlayer(UUID uuid) {
-        File dir = CobblemonBingoForge.getPlayerStorageDir();
-        dir.mkdirs();
-
-        if (CobblemonBingoForge.instance.dataWrapper.playerCache.containsKey(uuid))
-            return CobblemonBingoForge.instance.dataWrapper.playerCache.get(uuid);
-
-        File guildFile = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(uuid)));
-        Gson gson = Adapters.PRETTY_MAIN_GSON;
-        JsonReader reader = null;
-        try {
-            reader = new JsonReader(new FileReader(guildFile));
-        } catch (FileNotFoundException e) {
-            CobblemonBingoForge.getLog().error("Detected non-existing player, making new player data file");
-            return null;
-        }
-
-        return gson.fromJson(reader, Player.class);
     }
 }

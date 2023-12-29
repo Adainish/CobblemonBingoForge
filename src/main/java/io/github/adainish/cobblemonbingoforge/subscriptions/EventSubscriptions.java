@@ -3,6 +3,7 @@ package io.github.adainish.cobblemonbingoforge.subscriptions;
 import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.platform.events.PlatformEvents;
+import io.github.adainish.cobblemonbingoforge.CobblemonBingoForge;
 import io.github.adainish.cobblemonbingoforge.obj.Player;
 import io.github.adainish.cobblemonbingoforge.storage.PlayerStorage;
 import kotlin.Unit;
@@ -19,10 +20,10 @@ public class EventSubscriptions
     {
         PlatformEvents.SERVER_PLAYER_LOGIN.subscribe(Priority.NORMAL, serverPlayer -> {
 
-            Player player = PlayerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
+            Player player = CobblemonBingoForge.playerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
             if (player == null) {
-                PlayerStorage.makePlayer(serverPlayer.getPlayer().getUUID());
-                player = PlayerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
+                CobblemonBingoForge.playerStorage.makePlayer(serverPlayer.getPlayer());
+                player = CobblemonBingoForge.playerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
 
             }
 
@@ -37,7 +38,7 @@ public class EventSubscriptions
         PlatformEvents.SERVER_PLAYER_LOGOUT.subscribe(Priority.NORMAL, serverPlayer -> {
 
             if (serverPlayer != null) {
-                Player player = PlayerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
+                Player player = CobblemonBingoForge.playerStorage.getPlayer(serverPlayer.getPlayer().getUUID());
                 if (player != null) {
                     player.save();
                 }
@@ -50,7 +51,7 @@ public class EventSubscriptions
     {
         loadPlayerSubscriptions();
         CobblemonEvents.POKEMON_CAPTURED.subscribe(Priority.NORMAL, event -> {
-            Player player = PlayerStorage.getPlayer(event.getPlayer().getUUID());
+            Player player = CobblemonBingoForge.playerStorage.getPlayer(event.getPlayer().getUUID());
             if (player != null)
             {
                 if (!player.bingoCardList.isEmpty())

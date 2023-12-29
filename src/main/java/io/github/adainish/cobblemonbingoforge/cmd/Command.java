@@ -15,7 +15,7 @@ public class Command
                 .executes(cc -> {
                     //open gui
                     if (cc.getSource().isPlayer()) {
-                        Player player = PlayerStorage.getPlayer(cc.getSource().getPlayer().getUUID());
+                        Player player = CobblemonBingoForge.playerStorage.getPlayer(cc.getSource().getPlayer().getUUID());
                         if (player != null) {
                             try {
                                 player.open();

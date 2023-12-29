@@ -9,11 +9,13 @@ import ca.landonjw.gooeylibs2.api.button.linked.LinkedPageButton;
 import ca.landonjw.gooeylibs2.api.helpers.PaginationHelper;
 import ca.landonjw.gooeylibs2.api.page.LinkedPage;
 import ca.landonjw.gooeylibs2.api.template.types.ChestTemplate;
+import com.google.gson.Gson;
 import io.github.adainish.cobblemonbingoforge.CobblemonBingoForge;
-import io.github.adainish.cobblemonbingoforge.storage.PlayerStorage;
+import io.github.adainish.cobblemonbingoforge.util.Adapters;
 import io.github.adainish.cobblemonbingoforge.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +49,18 @@ public class Player
         return "";
     }
 
+    public Document toDocument() {
+        Gson gson  = Adapters.PRETTY_MAIN_GSON;
+        String json = gson.toJson(this);
+        return Document.parse(json);
+    }
+
+    public void saveNoCache()
+    {
+        CobblemonBingoForge.playerStorage.savePlayerNoCache(this);
+    }
+
+
     public void setUsername(String name)
     {
         this.userName = name;
@@ -54,12 +68,12 @@ public class Player
 
     public void save()
     {
-        PlayerStorage.savePlayer(this);
+        CobblemonBingoForge.playerStorage.savePlayer(this);
     }
 
     public void updateCache()
     {
-        CobblemonBingoForge.instance.dataWrapper.playerCache.put(uuid, this);
+        CobblemonBingoForge.instance.wrapper.playerCache.put(uuid, this);
     }
 
     public void updateBingo()
