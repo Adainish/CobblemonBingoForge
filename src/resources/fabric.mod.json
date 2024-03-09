@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "cobblemonbingo",
+  "version": "${version}",
+  "name": "Cobblemon Bingo",
+  "description": "Adds a bingo system to Cobblemon",
+  "authors": [
+    "Winglet"
+  ],
+  "contact": {
+    "repo": "https://github.com/adainish/IslandsSafari"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/cabled/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "io.github.adainish.cobblemonbingoforge.CobblemonBingoForge"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

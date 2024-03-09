@@ -15,16 +15,11 @@ import io.github.adainish.cobblemonbingoforge.subscriptions.EventSubscriptions;
 import io.github.adainish.cobblemonbingoforge.tasks.SavePlayerTask;
 import io.github.adainish.cobblemonbingoforge.wrapper.DataWrapper;
 import kotlin.Unit;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLConfig;
-import net.minecraftforge.fml.loading.FMLPaths;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod(CobblemonBingoForge.MODID)
-public class CobblemonBingoForge {
+
+public class CobblemonBingoForge implements ModInitializer {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "cobblemonbingoforge";
@@ -93,17 +88,14 @@ public class CobblemonBingoForge {
     // Directly reference a slf4j logger
     public CobblemonBingoForge() {
         instance = this;
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
-
-
-        // Register ourselves for server and other game events we are interested in
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
+    @Override
+    public void onInitialize() {
+        this.commonSetup();
+    }
+
+    private void commonSetup() {
         log.info("Booting up %n by %authors %v %y"
                 .replace("%n", MOD_NAME)
                 .replace("%authors", AUTHORS)
@@ -134,19 +126,18 @@ public class CobblemonBingoForge {
             this.handleShutDown();
             return Unit.INSTANCE;
         });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryaccess, environment) -> {
+            dispatcher.register(Command.getCommand());
+        });
     }
 
 
 
-    @SubscribeEvent
-    public void onCommandRegistration(RegisterCommandsEvent event)
-    {
-        event.getDispatcher().register(Command.getCommand());
-    }
 
 
     public void initDirs() {
-        setConfigDir(new File(FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath()) + "/CobblemonBingo/"));
+        setConfigDir(new File(FabricLoader.getInstance().getConfigDir()  + "/CobblemonBingo/"));
         getConfigDir().mkdir();
         setPlayerStorageDir(new File(configDir, "/playerdata/"));
         getPlayerStorageDir().mkdirs();
