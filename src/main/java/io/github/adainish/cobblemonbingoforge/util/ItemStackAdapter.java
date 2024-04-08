@@ -2,6 +2,7 @@ package io.github.adainish.cobblemonbingoforge.util;
 
 import com.google.gson.*;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -35,6 +36,6 @@ public class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserial
         if (src.isEmpty())
             return context.serialize("", String.class);
         else
-            return context.serialize(src.copy().serializeNBT().toString(), String.class);
+            return context.serialize(src.copy().save(new CompoundTag()).toString(), String.class);
     }
 }
