@@ -13,7 +13,7 @@ public class Adapters
     public static Gson PRETTY_MAIN_GSON = new GsonBuilder()
             .setPrettyPrinting()
             .disableHtmlEscaping()
-            .registerTypeAdapter(ItemStack.class, ItemStackAdapter.class)
+            .registerTypeAdapter(ItemStack.class, new ItemStackAdapter())
             .registerTypeAdapter(PokemonProperties.class, new PokemonPropertiesAdapter(true))
             .excludeFieldsWithModifiers(Modifier.TRANSIENT)
             .create();

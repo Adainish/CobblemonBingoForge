@@ -31,7 +31,6 @@ public class CobblemonBingo implements ModInitializer {
     public static final String YEAR = "2023";
     private static final org.apache.logging.log4j.Logger log = LogManager.getLogger(MOD_NAME);
     private static File configDir;
-    private static File storageDir;
 
     private static File playerStorageDir;
     private static MinecraftServer server;
@@ -75,7 +74,6 @@ public class CobblemonBingo implements ModInitializer {
     public static DataWrapper wrapper;
     public static PlayerStorage playerStorage;
 
-    // Directly reference a slf4j logger
     public CobblemonBingo() {
         instance = this;
     }
