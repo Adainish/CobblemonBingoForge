@@ -13,8 +13,11 @@ import com.google.gson.Gson;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import io.github.adainish.cobblemonbingo.util.Adapters;
 import io.github.adainish.cobblemonbingo.util.Util;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import org.bson.Document;
 
 import java.util.ArrayList;
@@ -108,8 +111,8 @@ public class Player
 
         bingoCardList.forEach(bingoCard -> {
             GooeyButton button = GooeyButton.builder()
-                    .title(Util.formattedString("&aBingo"))
-                    .lore(Util.formattedArrayList(Arrays.asList("&7Click to view this bingo card")))
+                    .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&aBingo"))))
+                    .with(DataComponents.LORE, new ItemLore((Util.formattedComponentList(Arrays.asList("&7Click to view this bingo card")))))
                     .onClick(b -> {
                         bingoCard.open(b.getPlayer());
                     })
@@ -129,13 +132,13 @@ public class Player
         PlaceholderButton placeHolderButton = new PlaceholderButton();
         LinkedPageButton previous = LinkedPageButton.builder()
                 .display(new ItemStack(Items.SPECTRAL_ARROW))
-                .title(Util.formattedString("Previous Page"))
+                .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("Previous Page")))
                 .linkType(LinkType.Previous)
                 .build();
 
         LinkedPageButton next = LinkedPageButton.builder()
                 .display(new ItemStack(Items.SPECTRAL_ARROW))
-                .title(Util.formattedString("Next Page"))
+                .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("Next Page")))
                 .linkType(LinkType.Next)
                 .build();
 

@@ -2,6 +2,7 @@ package io.github.adainish.cobblemonbingo.obj;
 
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.pokemon.Species;
+import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import net.minecraft.resources.ResourceLocation;
 
 public class BingoPokemon
@@ -18,17 +19,17 @@ public class BingoPokemon
     public void setDexNumber()
     {
         try {
-            this.dexNumber = PokemonSpecies.INSTANCE.getByIdentifier(new ResourceLocation(resourceKey)).create(1).getSpecies().getNationalPokedexNumber();
+            this.dexNumber = PokemonSpecies.INSTANCE.getByIdentifier(ResourceLocation.parse(resourceKey)).create(1).getSpecies().getNationalPokedexNumber();
         } catch (NullPointerException e)
         {
-            e.printStackTrace();
+            CobblemonBingo.getLog().warn(e);
             this.dexNumber = 1;
         }
     }
 
     public Species getSpecies()
     {
-        ResourceLocation resourceLocation = new ResourceLocation(resourceKey);
+        ResourceLocation resourceLocation = ResourceLocation.parse(resourceKey);
         return PokemonSpecies.INSTANCE.getByIdentifier(resourceLocation);
     }
 

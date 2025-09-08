@@ -29,6 +29,13 @@ public class Util
         return formattedList;
     }
 
+    public static List<Component> formattedComponentList(List<String> s) {
+        List<Component> list = new ArrayList<>();
+        for (String str : s)
+            list.add(Component.literal(formattedString(str)));
+        return list;
+    }
+
     public static ServerPlayer getPlayer(UUID uuid) {
         return CobblemonBingo.getServer().getPlayerList().getPlayer(uuid);
     }

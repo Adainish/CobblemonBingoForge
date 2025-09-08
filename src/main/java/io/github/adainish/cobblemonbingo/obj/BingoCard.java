@@ -14,14 +14,14 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import io.github.adainish.cobblemonbingo.util.Util;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -114,12 +114,12 @@ public class BingoCard
                 lore.add("&a&lCompleted!");
             else lore.add("&c&l(&4&l!&c&l) &eYou need to capture this pokemon for it to count towards your bingo!");
             GooeyButton button = GooeyButton.builder()
-                    .title(Util.formattedString("&b" + pokemon.getSpecies().showdownId()))
+                    .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&b" + pokemon.getSpecies().showdownId()))))
                     .display(Util.returnIcon(bingoPokemon.getSpecies().create(1)))
                     .onClick(b -> {
                         //info?
                     })
-                    .lore(Util.formattedArrayList(lore))
+                    .with(DataComponents.LORE, new ItemLore((Util.formattedComponentList(lore))))
                     .build();
             buttons.add(button);
         });
@@ -134,13 +134,13 @@ public class BingoCard
         PlaceholderButton placeHolderButton = new PlaceholderButton();
         LinkedPageButton previous = LinkedPageButton.builder()
                 .display(new ItemStack(Items.SPECTRAL_ARROW))
-                .title(Util.formattedString("Previous Page"))
+                .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("Previous Page")))
                 .linkType(LinkType.Previous)
                 .build();
 
         LinkedPageButton next = LinkedPageButton.builder()
                 .display(new ItemStack(Items.SPECTRAL_ARROW))
-                .title(Util.formattedString("Next Page"))
+                .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("Next Page")))
                 .linkType(LinkType.Next)
                 .build();
 

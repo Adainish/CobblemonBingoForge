@@ -1,10 +1,7 @@
 package io.github.adainish.cobblemonbingo.util;
 
 import com.google.gson.*;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -14,7 +11,7 @@ import java.lang.reflect.Type;
  * A type adapter for {@link ItemStack}
  * <p> This class is used to serialize and deserialize {@link ItemStack} objects.
  * </p>
- * @Author Adainish
+ * {@code @Author} Adainish
  */
 public class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> {
     /**
@@ -28,18 +25,15 @@ public class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserial
      */
     @Override
     public ItemStack deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        try {
-            if (json == null)
-                return new ItemStack(Items.PAPER);
-            CompoundTag compoundTag = TagParser.parseTag(json.getAsString());
-            //Convert json to NBT string, then to CompoundNBT
-            ItemStack itemStack = ItemStack.of(compoundTag);
-            return itemStack.isEmpty() ? new ItemStack(Items.PAPER) : itemStack;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        if (json == null || json.isJsonNull()) {
+            return new ItemStack(Items.PAPER);
         }
+        if (json.isJsonObject()) {
+            return ItemStack.CODEC.parse(JsonOps.INSTANCE, json).result().orElse(new ItemStack(Items.PAPER));
+        }
+        throw new JsonParseException("Invalid ItemStack JSON: " + json);
     }
+
 
     /**
      * Serialize the ItemStack to Json
@@ -51,9 +45,9 @@ public class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserial
      */
     @Override
     public JsonElement serialize(ItemStack src, Type typeOfSrc, JsonSerializationContext context) {
-        if (src.isEmpty())
+        if (src.isEmpty()) {
             return context.serialize("", String.class);
-        else
-            return context.serialize(src.copy().save(new CompoundTag()).toString(), String.class);
+        }
+        return ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, src).result().orElse(JsonNull.INSTANCE);
     }
 }
