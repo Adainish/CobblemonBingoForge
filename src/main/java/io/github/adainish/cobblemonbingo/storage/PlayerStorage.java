@@ -76,10 +76,17 @@ public class PlayerStorage
     public void savePlayer(Player player) {
         if (CobblemonBingo.dbConfig.enabled) {
             //save to db
-            if (this.database != null)
-            {
-                this.database.save(player);
+            try {
+                if (this.database != null)
+                {
+                    this.database.save(player);
+                }
+            } catch (NoClassDefFoundError e) {
+                CobblemonBingo.getLog().error("Database support is not enabled, please check your configuration");
+                CobblemonBingo.getLog().error("It is possible that the MongoDB driver is missing- please redownload the plugin you use to launch the driver");
+                return;
             }
+
         } else {
 
             File dir = CobblemonBingo.getPlayerStorageDir();
@@ -178,6 +185,53 @@ public class PlayerStorage
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean makePlayer(UUID uuid, boolean recreateIfExists) {
+        boolean playerExists = false;
+        Player bingoPlayer = new Player(uuid);
+        if (CobblemonBingo.dbConfig.enabled) {
+            if (this.database != null) {
+                return this.database.makePlayer(uuid, recreateIfExists);
+            }
+        } else {
+            File dir = CobblemonBingo.getPlayerStorageDir();
+            dir.mkdirs();
+
+
+            File file = new File(dir, "%uuid%.json".replaceAll("%uuid%", String.valueOf(uuid)));
+            if (file.exists()) {
+                CobblemonBingo.getLog().error("There was an issue generating the Player, Player already exists? Ending function");
+                playerExists = true;
+                if (!recreateIfExists)
+                    return playerExists;
+                Player bPlayer = new Player(uuid);
+                //remove old file
+                if (!file.delete()) {
+                    CobblemonBingo.getLog().error("There was an issue deleting the old player file, cannot recreate player");
+                    return playerExists;
+                }
+                bingoPlayer = bPlayer;
+            }
+
+            Gson gson = Adapters.PRETTY_MAIN_GSON;
+            String json = gson.toJson(bingoPlayer);
+
+            try {
+                if (!file.exists())
+                    if (file.createNewFile()) {
+                        FileWriter writer = new FileWriter(file);
+                        writer.write(json);
+                        writer.close();
+                        playerExists = true;
+                    } else {
+                        CobblemonBingo.getLog().error("There was an issue creating the player file, cannot create player");
+                    }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return playerExists;
     }
 
 

@@ -111,12 +111,12 @@ public class Player
 
         bingoCardList.forEach(bingoCard -> {
             GooeyButton button = GooeyButton.builder()
+                    .display(new ItemStack(Items.ENCHANTED_BOOK))
                     .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&aBingo"))))
                     .with(DataComponents.LORE, new ItemLore((Util.formattedComponentList(Arrays.asList("&7Click to view this bingo card")))))
                     .onClick(b -> {
                         bingoCard.open(b.getPlayer());
                     })
-                    .display(new ItemStack(Items.ENCHANTED_BOOK))
                     .build();
             buttons.add(button);
         });
@@ -166,5 +166,9 @@ public class Player
     }
 
 
-
+    public void giveNewCard() {
+        this.bingoCardList.add(new BingoCard());
+        save();
+        sendMessage("&aYou have been given a new bingo card!");
+    }
 }

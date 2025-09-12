@@ -110,14 +110,20 @@ public class BingoCard
         sortedBingoPokemon().forEach(bingoPokemon -> {
             Pokemon pokemon = bingoPokemon.getSpecies().create(1);
             List<String> lore = new ArrayList<>();
+            String pokemonName = pokemon.getSpecies().showdownId();
+            // capitalize first letter
+            pokemonName = pokemonName.substring(0, 1).toUpperCase() + pokemonName.substring(1).toLowerCase();
+
             if (bingoPokemon.completed)
                 lore.add("&a&lCompleted!");
-            else lore.add("&c&l(&4&l!&c&l) &eYou need to capture this pokemon for it to count towards your bingo!");
+            else {
+                lore.add("&c&l(&4&l!&c&l) &eYou need to capture a {pokemon} for it to count towards your bingo!".replace("{pokemon}", pokemonName));
+            }
             GooeyButton button = GooeyButton.builder()
-                    .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&b" + pokemon.getSpecies().showdownId()))))
-                    .display(Util.returnIcon(bingoPokemon.getSpecies().create(1)))
+                    .display(Util.returnIcon(pokemon))
+                    .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&b" + pokemonName))))
                     .onClick(b -> {
-                        //info?
+                        //info about the pokemon like spawn data?
                     })
                     .with(DataComponents.LORE, new ItemLore((Util.formattedComponentList(lore))))
                     .build();

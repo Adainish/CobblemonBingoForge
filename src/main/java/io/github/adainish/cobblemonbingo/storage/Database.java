@@ -94,6 +94,34 @@ public class Database
         }
     }
 
+    public boolean makePlayer(UUID uuid, boolean replaceIfExists)
+    {
+        try {
+            // Check if a player with the same UUID already exists in the database
+            if (collection.find(Filters.eq("uuid", uuid.toString())).first() != null) {
+                Player player = new Player(uuid);
+                if (replaceIfExists) {
+                    collection.replaceOne(Filters.eq("uuid", uuid.toString()), player.toDocument(), new ReplaceOptions().upsert(true));
+                    return true;
+                } else return false;
+            }
+            // Create a new Player object
+            Player player = CobblemonBingo.playerStorage.getPlayer(uuid);
+            if (player == null)
+                player = new Player(uuid);
+            // Convert Player object to Document
+            Document playerDocument = player.toDocument();
+            // Insert the new player Document into MongoDB
+            collection.insertOne(playerDocument);
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
     public boolean makePlayer(UUID uuid)
     {
         try {
