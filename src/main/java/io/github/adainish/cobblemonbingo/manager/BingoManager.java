@@ -12,6 +12,7 @@ import java.util.Random;
 
 public class BingoManager
 {
+    public String bingoGUITitle = "&6&l{player}'s Bingo Menu";
     public List<String> possibleSlotRewards = new ArrayList<>(Arrays.asList("reward_5", "reward_6", "reward_7", "reward_8"));
     public List<String> possibleCompletionRewards = new ArrayList<>(Arrays.asList("reward_1", "reward_2", "reward_3", "reward_4"));
 

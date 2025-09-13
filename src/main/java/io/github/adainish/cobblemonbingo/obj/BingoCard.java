@@ -14,12 +14,23 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import io.github.adainish.cobblemonbingo.util.Util;
+import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -113,14 +124,25 @@ public class BingoCard
             String pokemonName = pokemon.getSpecies().showdownId();
             // capitalize first letter
             pokemonName = pokemonName.substring(0, 1).toUpperCase() + pokemonName.substring(1).toLowerCase();
+//            ItemStack display = new ItemStack(Items.BOOK);
+            ItemStack display = Util.returnIcon(pokemon);
+            if (bingoPokemon.completed) {
+                                /*
+                Cobblemon has an ongoing bug preventing enchantments on pokemon icons, so for now we're disabling it
+                Here's the bug report: https://gitlab.com/cable-mc/cobblemon/-/issues/1696
+                Hiro is such a silly goose for not fixing it yet
+                Here's the code for when they fix it:
+                 */
+//                display.enchant(Util.getEnchantment(Enchantments.EFFICIENCY), 1);
+//                display.set(DataComponents.ENCHANTMENTS, display.getEnchantments().withTooltip(false));
 
-            if (bingoPokemon.completed)
                 lore.add("&a&lCompleted!");
+            }
             else {
                 lore.add("&c&l(&4&l!&c&l) &eYou need to capture a {pokemon} for it to count towards your bingo!".replace("{pokemon}", pokemonName));
             }
             GooeyButton button = GooeyButton.builder()
-                    .display(Util.returnIcon(pokemon))
+                    .display(display)
                     .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&b" + pokemonName))))
                     .onClick(b -> {
                         //info about the pokemon like spawn data?
@@ -132,7 +154,7 @@ public class BingoCard
         return buttons;
     }
 
-    public LinkedPage bingoMainPage()
+    public LinkedPage bingoMainPage(String userName)
     {
         ChestTemplate.Builder builder = ChestTemplate.builder(5);
         builder.fill(filler());
@@ -154,12 +176,12 @@ public class BingoCard
                 .set(0, 5, next)
                 .rectangle(1, 1, 3, 7, placeHolderButton);
 
-        return PaginationHelper.createPagesFromPlaceholders(builder.build(), bingoPokemonButtons(), LinkedPage.builder().template(builder.build()));
+        return PaginationHelper.createPagesFromPlaceholders(builder.build(), bingoPokemonButtons(), LinkedPage.builder().title(Util.formattedString(CobblemonBingo.config.bingoManager.bingoGUITitle.replace("{player}", userName))).template(builder.build()));
 
     }
 
     public void open(ServerPlayer serverPlayer)
     {
-        UIManager.openUIForcefully(serverPlayer, bingoMainPage());
+        UIManager.openUIForcefully(serverPlayer, bingoMainPage(serverPlayer.getName().getString()));
     }
 }

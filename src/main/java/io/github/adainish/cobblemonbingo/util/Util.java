@@ -5,9 +5,13 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,5 +70,9 @@ public class Util
         } catch (CommandSyntaxException e) {
             CobblemonBingo.getLog().error(e);
         }
+    }
+
+    public static Holder<Enchantment> getEnchantment(ResourceKey<Enchantment> enchantmentResourceKey) {
+        return CobblemonBingo.getServer().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantmentResourceKey);
     }
 }

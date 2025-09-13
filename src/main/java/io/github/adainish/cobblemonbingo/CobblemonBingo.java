@@ -99,10 +99,16 @@ public class CobblemonBingo implements ModInitializer {
             reload();
             if (dbConfig != null)
             {
-                if (dbConfig.enabled)
-                {
-                    playerStorage.database = new Database();
+                try {
+                    if (dbConfig.enabled)
+                    {
+                        playerStorage.database = new Database();
+                    }
+                } catch (NoClassDefFoundError e) {
+                    log.warn("MongoDB driver not found. Disabling MongoDB storage features.");
                 }
+
+
             }
             //register listeners
             subscriptions = new EventSubscriptions();
