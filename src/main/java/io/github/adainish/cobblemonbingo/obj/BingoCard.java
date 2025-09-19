@@ -81,6 +81,58 @@ public class BingoCard
         return toReturn.get();
     }
 
+    public boolean hasCompletedRow(int row)
+    {
+        if (row < 1 || row > 4)
+            return false;
+        AtomicBoolean toReturn = new AtomicBoolean(true);
+        List<BingoPokemon> bingoPokemons = sortedBingoPokemon();
+        for (int i = (row - 1) * 7; i < row * 7; i++)
+        {
+            if (i >= bingoPokemons.size())
+                break;
+            if (!bingoPokemons.get(i).completed)
+                toReturn.set(false);
+        }
+        return toReturn.get();
+    }
+
+    public boolean hasCompletedColumn(int column) {
+        if (column < 1 || column > 7)
+            return false;
+        List<BingoPokemon> bingoPokemons = sortedBingoPokemon();
+        AtomicBoolean toReturn = new AtomicBoolean(true);
+        for (int i = column - 1; i < bingoPokemons.size(); i += 7) {
+            if (!bingoPokemons.get(i).completed)
+                toReturn.set(false);
+        }
+        return toReturn.get();
+    }
+
+    public boolean hasCompletedDiagonal1() {
+        List<BingoPokemon> bingoPokemons = sortedBingoPokemon();
+        int size = bingoPokemons.size();
+        int min = Math.min(4, size / 7); // Number of rows
+        for (int i = 0; i < min; i++) {
+            int idx = i * 7 + i;
+            if (idx >= size || !bingoPokemons.get(idx).completed)
+                return false;
+        }
+        return true;
+    }
+
+    public boolean hasCompletedDiagonal2() {
+        List<BingoPokemon> bingoPokemons = sortedBingoPokemon();
+        int size = bingoPokemons.size();
+        int min = Math.min(4, size / 7); // Number of rows
+        for (int i = 0; i < min; i++) {
+            int idx = i * 7 + (6 - i);
+            if (idx >= size || !bingoPokemons.get(idx).completed)
+                return false;
+        }
+        return true;
+    }
+
     public void update(Player player, Pokemon pokemon)
     {
         if (selectedBingoPokemon.containsKey(pokemon.getSpecies().getResourceIdentifier().toString()))
@@ -90,6 +142,22 @@ public class BingoCard
                 try {
                     Reward slotReward = CobblemonBingo.config.bingoManager.getRandomSlotReward();
                     slotReward.execute(player);
+                    if (hasCompletedRow(1) || hasCompletedRow(2) || hasCompletedRow(3) || hasCompletedRow(4) || hasCompletedColumn(1) || hasCompletedColumn(2) || hasCompletedColumn(3) || hasCompletedColumn(4) || hasCompletedColumn(5) || hasCompletedColumn(6) || hasCompletedColumn(7)) {
+                        Reward lineReward = CobblemonBingo.config.bingoManager.getRandomRowReward();
+                        lineReward.execute(player);
+                    }
+                    // Check for completed columns and give column reward
+                    for (int col = 1; col <= 7; col++) {
+                        if (hasCompletedColumn(col)) {
+                            Reward columnReward = CobblemonBingo.config.bingoManager.getRandomColumnReward();
+                            columnReward.execute(player);
+                            break; // Only one column reward per update
+                        }
+                    }
+                    if (hasCompletedDiagonal1() || hasCompletedDiagonal2()) {
+                        Reward diagonalReward = CobblemonBingo.config.bingoManager.getRandomDiagonalReward();
+                        diagonalReward.execute(player);
+                    }
                     if (hasCompletedCard()) {
                         Reward completionReward = CobblemonBingo.config.bingoManager.getRandomCompletionReward();
                         completionReward.execute(player);
