@@ -120,10 +120,17 @@ public class PlayerStorage
 
     public void savePlayerNoCache(Player player) {
         if (CobblemonBingo.dbConfig.enabled) {
-            if (this.database != null)
-            {
-                this.database.save(player);
+            try {
+                if (this.database != null)
+                {
+                    this.database.save(player);
+                }
+            } catch (NoClassDefFoundError e) {
+                CobblemonBingo.getLog().error("Database support is not enabled, please check your configuration");
+                CobblemonBingo.getLog().error("It is possible that the MongoDB driver is missing- please redownload the plugin you use to launch the driver");
+                return;
             }
+
         } else {
 
             File dir = CobblemonBingo.getPlayerStorageDir();

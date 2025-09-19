@@ -47,9 +47,10 @@ public class Player
 
     public String getUsername()
     {
-        if (this.userName != null)
-            return userName;
-        return "";
+        //check if player is online
+        if (Util.getPlayer(uuid) != null)
+            return Util.getPlayer(uuid).getGameProfile().getName();
+        return "Unknown";
     }
 
     public Document toDocument() {
@@ -160,7 +161,7 @@ public class Player
             {
                 UIManager.openUIForcefully(Util.getPlayer(uuid), bingoScrollPages());
             } else {
-                UIManager.openUIForcefully(Util.getPlayer(uuid), bingoCardList.get(0).bingoMainPage());
+                UIManager.openUIForcefully(Util.getPlayer(uuid), bingoCardList.get(0).bingoMainPage(getUsername()));
             }
         }
     }
