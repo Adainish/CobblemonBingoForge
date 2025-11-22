@@ -26,32 +26,29 @@ import java.util.concurrent.Executors;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-public class Database
-{
+public class Database {
     public MongoClientSettings mongoClientSettings;
     public MongoClient mongoClient;
     public MongoDatabase database;
     public MongoCollection<Document> collection;
 
-    public Database()
-    {
-        if (CobblemonBingo.dbConfig.enabled)
-        {
-            if (this.init())
-            {
+    public Database() {
+        if (CobblemonBingo.dbConfig.enabled) {
+            if (this.init()) {
                 CobblemonBingo.getLog().warn("Successfully initialised database connection");
-            } else CobblemonBingo.getLog().warn("Failed connecting to the database- please check the error for more info or contact the developer");
+            } else
+                CobblemonBingo.getLog().warn("Failed connecting to the database- please check the error for more info or contact the developer");
         } else CobblemonBingo.getLog().warn("Database not enabled, now using local storage files.");
     }
 
-    public void shutdown()
-    {
+    public void shutdown() {
         //close connection
         if (mongoClient != null) {
 
             CobblemonBingo.getLog().warn("Shutting down database connection");
             mongoClient.close();
-        } else CobblemonBingo.getLog().warn("Something went wrong while shutting down the mongo db, was it ever set up to begin with?");
+        } else
+            CobblemonBingo.getLog().warn("Something went wrong while shutting down the mongo db, was it ever set up to begin with?");
     }
 
     // Static method to create a Player object from a Document
@@ -60,24 +57,21 @@ public class Database
         return gson.fromJson(document.toJson(), Player.class);
     }
 
-    public boolean save(Player player)
-    {
+    public boolean save(Player player) {
         try {
             Document playerDoc = player.toDocument();
             // Insert or replace the document in MongoDB using the player's UUID as the key
             collection.replaceOne(Filters.eq("uuid", player.uuid.toString()), playerDoc, new ReplaceOptions().upsert(true));
-            
+
             return true;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         CobblemonBingo.getLog().error("Something went wrong while saving a player to the database... refer to error above");
         return false;
     }
 
-    public Player getPlayer(UUID uuid)
-    {
+    public Player getPlayer(UUID uuid) {
         try {
             // Query MongoDB to find the player Document by UUID
             Document playerDocument = collection.find(Filters.eq("uuid", uuid.toString())).first();
@@ -94,8 +88,7 @@ public class Database
         }
     }
 
-    public boolean makePlayer(UUID uuid, boolean replaceIfExists)
-    {
+    public boolean makePlayer(UUID uuid, boolean replaceIfExists) {
         try {
             // Check if a player with the same UUID already exists in the database
             if (collection.find(Filters.eq("uuid", uuid.toString())).first() != null) {
@@ -122,8 +115,7 @@ public class Database
     }
 
 
-    public boolean makePlayer(UUID uuid)
-    {
+    public boolean makePlayer(UUID uuid) {
         try {
             // Check if a player with the same UUID already exists in the database
             if (collection.find(Filters.eq("uuid", uuid.toString())).first() != null) {
@@ -134,10 +126,10 @@ public class Database
             Player player = CobblemonBingo.playerStorage.getPlayer(uuid);
             if (player == null)
                 player = new Player(uuid);
-                // Convert Player object to Document
-                Document playerDocument = player.toDocument();
-                // Insert the new player Document into MongoDB
-                collection.insertOne(playerDocument);
+            // Convert Player object to Document
+            Document playerDocument = player.toDocument();
+            // Insert the new player Document into MongoDB
+            collection.insertOne(playerDocument);
 
             return true;
         } catch (Exception e) {
@@ -146,8 +138,7 @@ public class Database
         return false;
     }
 
-    public boolean makePlayer(Player player)
-    {
+    public boolean makePlayer(Player player) {
         try {
             // Check if a player with the same UUID already exists in the database
             if (collection.find(Filters.eq("uuid", player.uuid.toString())).first() != null) {
@@ -166,8 +157,7 @@ public class Database
         return false;
     }
 
-    public boolean init()
-    {
+    public boolean init() {
         try {
             ConnectionString connectionString = new ConnectionString(CobblemonBingo.dbConfig.mongoDBURI);
             CodecRegistry codecRegistry = fromRegistries(
@@ -180,8 +170,7 @@ public class Database
             database = mongoClient.getDatabase(CobblemonBingo.dbConfig.database);
             collection = database.getCollection(CobblemonBingo.dbConfig.tableName);
             return true;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -189,8 +178,7 @@ public class Database
         return false;
     }
 
-    public boolean migratePlayerData()
-    {
+    public boolean migratePlayerData() {
         List<Player> list = new ArrayList<>(CobblemonBingo.playerStorage.getAllPlayersFromFiles(false));
         int currentMigrated = 0;
         int failed = 0;
@@ -198,9 +186,8 @@ public class Database
         ExecutorService executor = Executors.newCachedThreadPool();
         CobblemonBingo.getLog().warn("Starting migration for %amount% player files...".replace("%amount%", String.valueOf(totalToMigrate)));
         // Schedule tasks to run asynchronously
-        for (int i = 0; i < list.size(); i++) {
-            final int taskNumber = i;
-            Player player = list.get(i);
+        for (int taskNumber = 0; taskNumber < list.size(); taskNumber++) {
+            Player player = list.get(taskNumber);
             CobblemonBingo.getLog().warn("Now migrating data for: %uuid%".replace("%uuid%", player.uuid.toString()));
             if (makePlayer(player)) {
                 currentMigrated++;
@@ -209,7 +196,7 @@ public class Database
                 failed++;
                 CobblemonBingo.getLog().warn("Couldn't make a player entry for %uuid%, did this player already exist in the database?".replace("%uuid%", player.uuid.toString()));
             }
-            CobblemonBingo.getLog().warn("Task " + taskNumber + " executed asynchronously on thread: " + Thread.currentThread().getName());
+            CobblemonBingo.getLog().warn("Task {} executed asynchronously on thread: {}", taskNumber, Thread.currentThread().getName());
         }
         CobblemonBingo.getLog().warn("Shutting down async scheduling for migration");
         CobblemonBingo.getLog().warn("%succeeded% transfers succeeded, %failed% failed, total of %total% entries"

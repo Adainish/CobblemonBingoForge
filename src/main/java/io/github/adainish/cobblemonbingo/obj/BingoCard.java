@@ -14,22 +14,12 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import io.github.adainish.cobblemonbingo.util.Util;
-import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.*;
@@ -52,7 +42,7 @@ public class BingoCard
     {
         while (selectedBingoPokemon.size() < CobblemonBingo.config.bingoManager.bingoSize)
         {
-            Species species = PokemonSpecies.INSTANCE.random();
+            Species species = PokemonSpecies.random();
             if (CobblemonBingo.config.bingoManager.blacklistedSpeciesResourceKeys.contains(species.resourceIdentifier.toString()))
                 continue;
             BingoPokemon bingoPokemon = new BingoPokemon(species.resourceIdentifier.toString());
@@ -192,17 +182,10 @@ public class BingoCard
             String pokemonName = pokemon.getSpecies().showdownId();
             // capitalize first letter
             pokemonName = pokemonName.substring(0, 1).toUpperCase() + pokemonName.substring(1).toLowerCase();
-//            ItemStack display = new ItemStack(Items.BOOK);
             ItemStack display = Util.returnIcon(pokemon);
             if (bingoPokemon.completed) {
-                                /*
-                Cobblemon has an ongoing bug preventing enchantments on pokemon icons, so for now we're disabling it
-                Here's the bug report: https://gitlab.com/cable-mc/cobblemon/-/issues/1696
-                Hiro is such a silly goose for not fixing it yet
-                Here's the code for when they fix it:
-                 */
-//                display.enchant(Util.getEnchantment(Enchantments.EFFICIENCY), 1);
-//                display.set(DataComponents.ENCHANTMENTS, display.getEnchantments().withTooltip(false));
+                display.enchant(Util.getEnchantment(Enchantments.EFFICIENCY), 1);
+                display.set(DataComponents.ENCHANTMENTS, display.getEnchantments().withTooltip(false));
 
                 lore.add("&a&lCompleted!");
             }
@@ -213,7 +196,7 @@ public class BingoCard
                     .display(display)
                     .with(DataComponents.CUSTOM_NAME, Component.literal((Util.formattedString("&b" + pokemonName))))
                     .onClick(b -> {
-                        //info about the pokemon like spawn data?
+                        //info about the Pokémon like spawn data?
                     })
                     .with(DataComponents.LORE, new ItemLore((Util.formattedComponentList(lore))))
                     .build();

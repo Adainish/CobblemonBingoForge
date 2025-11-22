@@ -10,7 +10,7 @@ public class SavePlayerTask implements Runnable
 {
     @Override
     public void run() {
-        List<Player> playerList = new ArrayList<>(CobblemonBingo.instance.wrapper.playerCache.values());
+        List<Player> playerList = new ArrayList<>(CobblemonBingo.wrapper.playerCache.values());
         playerList.forEach(player -> {
             player.expireOldCards();
             player.updateBingo();

@@ -19,7 +19,7 @@ public class BingoPokemon
     public void setDexNumber()
     {
         try {
-            this.dexNumber = PokemonSpecies.INSTANCE.getByIdentifier(ResourceLocation.parse(resourceKey)).create(1).getSpecies().getNationalPokedexNumber();
+            this.dexNumber = PokemonSpecies.getByIdentifier(ResourceLocation.parse(resourceKey)).create(1).getSpecies().getNationalPokedexNumber();
         } catch (NullPointerException e)
         {
             CobblemonBingo.getLog().warn(e);
@@ -30,7 +30,7 @@ public class BingoPokemon
     public Species getSpecies()
     {
         ResourceLocation resourceLocation = ResourceLocation.parse(resourceKey);
-        return PokemonSpecies.INSTANCE.getByIdentifier(resourceLocation);
+        return PokemonSpecies.getByIdentifier(resourceLocation);
     }
 
     public String getResourceKey() {

@@ -121,9 +121,7 @@ public class CobblemonBingo implements ModInitializer {
             return Unit.INSTANCE;
         });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryaccess, environment) -> {
-            dispatcher.register(Command.getCommand());
-        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryaccess, environment) -> dispatcher.register(Command.getCommand()));
     }
 
 
