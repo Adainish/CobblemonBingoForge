@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class BingoManager
 {
@@ -31,7 +32,7 @@ public class BingoManager
 
     public void initDefaultBlackList()
     {
-        PokemonSpecies.INSTANCE.getSpecies().forEach(species -> {
+        PokemonSpecies.getSpecies().forEach(species -> {
             Pokemon pokemon = species.create(1);
             if (pokemon.isUltraBeast() || pokemon.isLegendary())
                 blacklistedSpeciesResourceKeys.add(species.getResourceIdentifier().toString());
@@ -62,12 +63,19 @@ public class BingoManager
     }
     private Reward getReward(List<String> possibleRewards) {
         List<Reward> rewardList = new ArrayList<>();
-        for (String s: possibleRewards) {
-            if (CobblemonBingo.rewardsConfig.rewardManager.rewards.containsKey(s))
-                for (int i = 0; i < CobblemonBingo.rewardsConfig.rewardManager.rewards.get(s).chance; i++) {
-                    rewardList.add(CobblemonBingo.rewardsConfig.rewardManager.rewards.get(s));
+        for (String s : possibleRewards) {
+            Reward r = CobblemonBingo.rewardsConfig.rewardManager.rewards.get(s);
+            if (r != null) {
+                for (int i = 0; i < r.chance; i++) {
+                    rewardList.add(r);
                 }
+            }
         }
-        return rewardList.get(new Random(rewardList.size()).nextInt());
+
+        if (rewardList.isEmpty()) {
+            return null;
+        }
+
+        return rewardList.get(ThreadLocalRandom.current().nextInt(rewardList.size()));
     }
 }

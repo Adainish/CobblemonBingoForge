@@ -131,29 +131,43 @@ public class BingoCard
                 selectedBingoPokemon.get(pokemon.getSpecies().getResourceIdentifier().toString()).completed = true;
                 try {
                     Reward slotReward = CobblemonBingo.config.bingoManager.getRandomSlotReward();
-                    slotReward.execute(player);
+                    if (slotReward != null) {
+                        slotReward.execute(player);
+                    }
                     if (hasCompletedRow(1) || hasCompletedRow(2) || hasCompletedRow(3) || hasCompletedRow(4) || hasCompletedColumn(1) || hasCompletedColumn(2) || hasCompletedColumn(3) || hasCompletedColumn(4) || hasCompletedColumn(5) || hasCompletedColumn(6) || hasCompletedColumn(7)) {
                         Reward lineReward = CobblemonBingo.config.bingoManager.getRandomRowReward();
-                        lineReward.execute(player);
+                        if (lineReward != null) {
+                            lineReward.execute(player);
+                        }
+
                     }
                     // Check for completed columns and give column reward
                     for (int col = 1; col <= 7; col++) {
                         if (hasCompletedColumn(col)) {
                             Reward columnReward = CobblemonBingo.config.bingoManager.getRandomColumnReward();
-                            columnReward.execute(player);
+                            if (columnReward != null) {
+                                columnReward.execute(player);
+                            }
                             break; // Only one column reward per update
                         }
                     }
                     if (hasCompletedDiagonal1() || hasCompletedDiagonal2()) {
                         Reward diagonalReward = CobblemonBingo.config.bingoManager.getRandomDiagonalReward();
-                        diagonalReward.execute(player);
+                        if (diagonalReward != null) {
+                            diagonalReward.execute(player);
+                        }
+
                     }
                     if (hasCompletedCard()) {
                         Reward completionReward = CobblemonBingo.config.bingoManager.getRandomCompletionReward();
-                        completionReward.execute(player);
+                        if (completionReward != null) {
+                            completionReward.execute(player);
+                        }
+
                     }
                 } catch (Exception e) {
                     CobblemonBingo.getLog().error("Seems like you failed to set up rewards for Cobblemon Bingo properly, please check your config(s) for any errors!");
+                    e.printStackTrace();
                 }
 
             }
