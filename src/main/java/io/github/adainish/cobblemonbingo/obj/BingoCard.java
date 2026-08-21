@@ -221,7 +221,7 @@ public class BingoCard
 
     public LinkedPage bingoMainPage(String userName)
     {
-        ChestTemplate.Builder builder = ChestTemplate.builder(5);
+        ChestTemplate.Builder builder = ChestTemplate.builder(7);
         builder.fill(filler());
 
         PlaceholderButton placeHolderButton = new PlaceholderButton();
@@ -236,10 +236,10 @@ public class BingoCard
                 .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("Next Page")))
                 .linkType(LinkType.Next)
                 .build();
-
-        builder.set(0, 3, previous)
-                .set(0, 5, next)
-                .rectangle(1, 1, 3, 7, placeHolderButton);
+        builder
+//        builder.set(0, 3, previous)
+//                .set(0, 5, next)
+                .rectangle(1, 2, 5, 5, placeHolderButton);
 
         return PaginationHelper.createPagesFromPlaceholders(builder.build(), bingoPokemonButtons(), LinkedPage.builder().title(Util.formattedString(CobblemonBingo.config.bingoManager.bingoGUITitle.replace("{player}", userName))).template(builder.build()));
 
