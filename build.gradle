@@ -7,6 +7,7 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven
             {
@@ -46,6 +47,8 @@ dependencies {
     compileOnlyApi("net.kyori:adventure-platform-fabric:5.8.0")
     compileOnlyApi("net.kyori:adventure-text-minimessage:4.17.0")
     compileOnly 'net.luckperms:api:5.4'
+    // optional sharding support through IveriumCore (published by IveriumCore: :fabric:publishShardApiPublicationToMavenLocal)
+    compileOnly "io.github.adainish:iveriumcore-shard-api:1.0.0"
     implementation("net.kyori:adventure-text-serializer-ansi:4.14.0")
     }
 
