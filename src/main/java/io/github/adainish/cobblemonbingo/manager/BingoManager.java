@@ -14,6 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BingoManager
 {
     public String bingoGUITitle = "&6&l{player}'s Bingo Menu";
+    public String rewardsGUITitle = "&6&lBingo Rewards";
     public List<String> possibleSlotRewards = new ArrayList<>(Arrays.asList("reward_5", "reward_6", "reward_7", "reward_8"));
     public List<String> possibleCompletionRewards = new ArrayList<>(Arrays.asList("reward_1", "reward_2", "reward_3", "reward_4"));
     public List<String> possibleRowRewards = new ArrayList<>(Arrays.asList("reward_9", "reward_10", "reward_11", "reward_12"));
@@ -61,6 +62,27 @@ public class BingoManager
     public Reward getRandomDiagonalReward() {
         return getReward(possibleDiagonalRewards);
     }
+
+    public List<String> getPossibleSlotRewards() {
+        return possibleSlotRewards;
+    }
+
+    public List<String> getPossibleCompletionRewards() {
+        return possibleCompletionRewards;
+    }
+
+    public List<String> getPossibleRowRewards() {
+        return possibleRowRewards;
+    }
+
+    public List<String> getPossibleColumnRewards() {
+        return possibleColumnRewards;
+    }
+
+    public List<String> getPossibleDiagonalRewards() {
+        return possibleDiagonalRewards;
+    }
+
     private Reward getReward(List<String> possibleRewards) {
         List<Reward> rewardList = new ArrayList<>();
         for (String s : possibleRewards) {

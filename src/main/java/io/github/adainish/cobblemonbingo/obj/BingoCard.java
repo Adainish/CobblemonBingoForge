@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
+import io.github.adainish.cobblemonbingo.gui.RewardsGUI;
 import io.github.adainish.cobblemonbingo.util.Util;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class BingoCard
 {
@@ -219,6 +221,16 @@ public class BingoCard
         return buttons;
     }
 
+    public GooeyButton rewardsButton(Consumer<ServerPlayer> onBack)
+    {
+        return GooeyButton.builder()
+                .display(new ItemStack(Items.CHEST))
+                .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("&6&lRewards")))
+                .with(DataComponents.LORE, new ItemLore(Util.formattedComponentList(List.of("&7Click to view the rewards you can earn!"))))
+                .onClick(b -> new RewardsGUI(onBack).open(b.getPlayer()))
+                .build();
+    }
+
     public LinkedPage bingoMainPage(String userName)
     {
         ChestTemplate.Builder builder = ChestTemplate.builder(7);
@@ -240,6 +252,7 @@ public class BingoCard
 //        builder.set(0, 3, previous)
 //                .set(0, 5, next)
                 .rectangle(1, 2, 5, 5, placeHolderButton);
+        builder.set(6, 4, rewardsButton(p -> UIManager.openUIForcefully(p, bingoMainPage(userName))));
 
         return PaginationHelper.createPagesFromPlaceholders(builder.build(), bingoPokemonButtons(), LinkedPage.builder().title(Util.formattedString(CobblemonBingo.config.bingoManager.bingoGUITitle.replace("{player}", userName))).template(builder.build()));
 

@@ -11,6 +11,7 @@ import ca.landonjw.gooeylibs2.api.page.LinkedPage;
 import ca.landonjw.gooeylibs2.api.template.types.ChestTemplate;
 import com.google.gson.Gson;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
+import io.github.adainish.cobblemonbingo.gui.RewardsGUI;
 import io.github.adainish.cobblemonbingo.util.Adapters;
 import io.github.adainish.cobblemonbingo.util.Util;
 import net.minecraft.core.component.DataComponents;
@@ -142,6 +143,12 @@ public class Player
 
         builder.set(0, 3, previous)
                 .set(0, 5, next)
+                .set(0, 4, GooeyButton.builder()
+                        .display(new ItemStack(Items.CHEST))
+                        .with(DataComponents.CUSTOM_NAME, Component.literal(Util.formattedString("&6&lRewards")))
+                        .with(DataComponents.LORE, new ItemLore(Util.formattedComponentList(List.of("&7Click to view the rewards you can earn!"))))
+                        .onClick(b -> new RewardsGUI(p -> UIManager.openUIForcefully(p, bingoScrollPages())).open(b.getPlayer()))
+                        .build())
                 .rectangle(1, 1, 3, 7, placeHolderButton);
 
         return PaginationHelper.createPagesFromPlaceholders(builder.build(), bingoButtons(), LinkedPage.builder().template(builder.build()));

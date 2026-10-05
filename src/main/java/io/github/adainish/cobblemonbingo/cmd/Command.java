@@ -2,6 +2,7 @@ package io.github.adainish.cobblemonbingo.cmd;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
+import io.github.adainish.cobblemonbingo.gui.RewardsGUI;
 import io.github.adainish.cobblemonbingo.obj.Player;
 import io.github.adainish.cobblemonbingo.util.Util;
 import net.minecraft.commands.CommandSourceStack;
@@ -30,6 +31,16 @@ public class Command
                     }
                     return 1;
                 })
+                .then(Commands.literal("rewards")
+                        .executes(cc -> {
+                            if (cc.getSource().isPlayer()) {
+                                new RewardsGUI(null).open(cc.getSource().getPlayer());
+                            } else {
+                                Util.send(cc.getSource(), "&cOnly players can use this command.");
+                            }
+                            return 1;
+                        })
+                )
                 .then(Commands.literal("reload")
                         .requires(commandSourceStack -> commandSourceStack.hasPermission(4))
                         .executes(cc -> {
