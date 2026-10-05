@@ -18,6 +18,9 @@
       "io.github.adainish.cobblemonbingo.CobblemonBingo"
     ]
   },
+  "suggests": {
+    "iveriumcore": "*"
+  },
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",

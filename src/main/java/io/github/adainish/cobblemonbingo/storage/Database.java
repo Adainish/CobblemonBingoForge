@@ -9,6 +9,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.conversions.Bson;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
 import io.github.adainish.cobblemonbingo.conf.MongoCodecStringArray;
 import io.github.adainish.cobblemonbingo.obj.Player;
@@ -69,6 +72,47 @@ public class Database {
         }
         CobblemonBingo.getLog().error("Something went wrong while saving a player to the database... refer to error above");
         return false;
+    }
+
+    /** Document field holding the revision used for conditional writes when sharded. */
+    public static final String REVISION_FIELD = "revision";
+    /** Returned by {@link #saveIfRevision} when another server changed (or created) the document first. */
+    public static final long CONFLICT = -1;
+
+    /** A stored player and the revision it was read at. */
+    public record Loaded(Player player, long revision) {
+    }
+
+    /** The stored player with its revision (0 for documents written without one), or null when there is none. Throws on database errors. */
+    public Loaded loadWithRevision(UUID uuid) {
+        Document playerDocument = collection.find(Filters.eq("uuid", uuid.toString())).first();
+        if (playerDocument == null)
+            return null;
+        Object revision = playerDocument.get(REVISION_FIELD);
+        return new Loaded(this.fromDocument(playerDocument), revision instanceof Number number ? number.longValue() : 0);
+    }
+
+    /**
+     * Writes the player only when the stored revision is still {@code expectedRevision} (-1: the document must not
+     * exist yet). Returns the new revision, or {@link #CONFLICT}. Throws on database errors.
+     */
+    public long saveIfRevision(Player player, long expectedRevision) {
+        Document playerDoc = player.toDocument();
+        if (expectedRevision < 0) {
+            playerDoc.put(REVISION_FIELD, 0L);
+            UpdateResult result = collection.updateOne(Filters.eq("uuid", player.uuid.toString()), new Document("$setOnInsert", playerDoc), new UpdateOptions().upsert(true));
+            return result.getUpsertedId() != null ? 0 : CONFLICT;
+        }
+        playerDoc.put(REVISION_FIELD, expectedRevision + 1);
+        Bson revisionFilter = expectedRevision == 0
+                ? Filters.or(Filters.eq(REVISION_FIELD, 0L), Filters.exists(REVISION_FIELD, false))
+                : Filters.eq(REVISION_FIELD, expectedRevision);
+        UpdateResult result = collection.replaceOne(Filters.and(Filters.eq("uuid", player.uuid.toString()), revisionFilter), playerDoc);
+        return result.getMatchedCount() == 1 ? expectedRevision + 1 : CONFLICT;
+    }
+
+    public boolean isConnected() {
+        return collection != null;
     }
 
     public Player getPlayer(UUID uuid) {

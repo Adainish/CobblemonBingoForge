@@ -8,6 +8,7 @@ import io.github.adainish.cobblemonbingo.conf.Config;
 import io.github.adainish.cobblemonbingo.conf.DBConfig;
 import io.github.adainish.cobblemonbingo.conf.LanguageConfig;
 import io.github.adainish.cobblemonbingo.conf.RewardsConfig;
+import io.github.adainish.cobblemonbingo.shard.ShardBridge;
 import io.github.adainish.cobblemonbingo.storage.Database;
 import io.github.adainish.cobblemonbingo.storage.PlayerStorage;
 import io.github.adainish.cobblemonbingo.subscriptions.EventSubscriptions;
@@ -159,6 +160,26 @@ public class CobblemonBingo implements ModInitializer {
     public void reload() {
         initDirs();
         initConfigs();
+    }
+
+    private boolean shardedStorageChecked = false;
+
+    /**
+     * Sharded (IveriumCore network): every instance must use the same MongoDB database, otherwise each instance keeps
+     * its own copy of the bingo cards. Checked on the first join, once the network is up.
+     */
+    public void checkShardedStorage()
+    {
+        if (shardedStorageChecked || !ShardBridge.sharded())
+            return;
+        shardedStorageChecked = true;
+        if (!playerStorage.sharedStorageReady()) {
+            log.error("==================================================================");
+            log.error("CobblemonBingo runs on a sharded server (" + ShardBridge.serverId() + ") but MongoDB storage is not enabled.");
+            log.error("Bingo cards are kept per instance; slots can be completed (and rewarded) again on another instance!");
+            log.error("Set enabled=true and the shared mongoDBURI in config/CobblemonBingo/db_settings.json on every instance.");
+            log.error("==================================================================");
+        }
     }
 
     public void handleShutDown()

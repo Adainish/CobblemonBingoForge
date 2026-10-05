@@ -24,6 +24,8 @@ public class Command
                                 Util.send(cc.getSource(), "&cFailed to load your bingo data!");
                             }
 
+                        } else {
+                            Util.send(cc.getSource(), "&cYour bingo data is still loading, please try again in a moment.");
                         }
                     } else {
                         Util.send(cc.getSource(), "&eDid you mean to use /bingo reload?");

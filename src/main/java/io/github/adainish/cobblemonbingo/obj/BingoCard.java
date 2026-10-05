@@ -127,8 +127,16 @@ public class BingoCard
     {
         if (selectedBingoPokemon.containsKey(pokemon.getSpecies().getResourceIdentifier().toString()))
         {
-            if (!selectedBingoPokemon.get(pokemon.getSpecies().getResourceIdentifier().toString()).completed) {
-                selectedBingoPokemon.get(pokemon.getSpecies().getResourceIdentifier().toString()).completed = true;
+            BingoPokemon bingoPokemon = selectedBingoPokemon.get(pokemon.getSpecies().getResourceIdentifier().toString());
+            if (!bingoPokemon.completed) {
+                bingoPokemon.completed = true;
+                // store the completion before handing out rewards, so a card that is rolled back (crash, server
+                // switch) can't be completed and paid out a second time
+                if (!CobblemonBingo.playerStorage.saveClaim(player)) {
+                    bingoPokemon.completed = false;
+                    player.sendMessage("&cYour bingo progress could not be saved, so this catch didn't count. Please catch it again.");
+                    return;
+                }
                 try {
                     Reward slotReward = CobblemonBingo.config.bingoManager.getRandomSlotReward();
                     if (slotReward != null) {
