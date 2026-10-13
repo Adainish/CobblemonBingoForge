@@ -177,6 +177,23 @@ Optional, through IveriumCore's shard API. Details in `SHARDING.md`. In short:
   is given.
 - Reward commands run on the instance where the slot was completed. No config keys.
 
+## Quest events
+
+When ConquestQuests is installed, the mod reports these events for `{"type": "custom_event", "event": "<name>"}`
+quest objectives (no hard dependency; without ConquestQuests nothing happens). They fire on a capture that completes
+a slot, after the slot was saved (a failed save fires nothing), for an online player.
+
+| Event | Fires when |
+|---|---|
+| `bingo.slot` | A slot is completed (once per card the capture completes a slot on) |
+| `bingo.line` | A row, column or diagonal becomes full. Once per line that was not full before this capture, so a slot finishing two lines fires it twice. Unlike the line rewards it does not repeat on later slots |
+| `bingo.line.row` | Same, rows only (4 rows of 7) |
+| `bingo.line.column` | Same, columns only (7 columns of 4) |
+| `bingo.line.diagonal` | Same, diagonals only (2) |
+| `bingo.card` | The last open slot of a card is completed |
+
+Lines use the same Dex-sorted layout as the line rewards (see [Lines](#lines)).
+
 ## Gotchas
 
 - **Repeat line rewards**: the row, column and diagonal checks look at the whole card, not at the line the new slot

@@ -13,6 +13,7 @@ import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import io.github.adainish.cobblemonbingo.CobblemonBingo;
+import io.github.adainish.cobblemonbingo.compat.QuestEvents;
 import io.github.adainish.cobblemonbingo.gui.RewardsGUI;
 import io.github.adainish.cobblemonbingo.util.Util;
 import net.minecraft.core.component.DataComponents;
@@ -131,6 +132,9 @@ public class BingoCard
         {
             BingoPokemon bingoPokemon = selectedBingoPokemon.get(pokemon.getSpecies().getResourceIdentifier().toString());
             if (!bingoPokemon.completed) {
+                int rowsBefore = completedRows();
+                int columnsBefore = completedColumns();
+                int diagonalsBefore = completedDiagonals();
                 bingoPokemon.completed = true;
                 // store the completion before handing out rewards, so a card that is rolled back (crash, server
                 // switch) can't be completed and paid out a second time
@@ -179,9 +183,61 @@ public class BingoCard
                     CobblemonBingo.getLog().error("Seems like you failed to set up rewards for Cobblemon Bingo properly, please check your config(s) for any errors!");
                     e.printStackTrace();
                 }
-
+                fireQuestEvents(player, rowsBefore, columnsBefore, diagonalsBefore);
             }
         }
+    }
+
+    public int completedRows()
+    {
+        int count = 0;
+        for (int row = 1; row <= 4; row++)
+            if (hasCompletedRow(row))
+                count++;
+        return count;
+    }
+
+    public int completedColumns()
+    {
+        int count = 0;
+        for (int col = 1; col <= 7; col++)
+            if (hasCompletedColumn(col))
+                count++;
+        return count;
+    }
+
+    public int completedDiagonals()
+    {
+        return (hasCompletedDiagonal1() ? 1 : 0) + (hasCompletedDiagonal2() ? 1 : 0);
+    }
+
+    /**
+     * Quest events for a slot that was just completed and saved: the slot, every line it finished (only the lines
+     * that were not full before this catch) and the full card.
+     */
+    private void fireQuestEvents(Player player, int rowsBefore, int columnsBefore, int diagonalsBefore)
+    {
+        ServerPlayer serverPlayer = Util.getPlayer(player.uuid);
+        if (serverPlayer == null)
+            return;
+        QuestEvents.fire(serverPlayer, "bingo.slot");
+        int rows = completedRows() - rowsBefore;
+        int columns = completedColumns() - columnsBefore;
+        int diagonals = completedDiagonals() - diagonalsBefore;
+        for (int i = 0; i < rows; i++) {
+            QuestEvents.fire(serverPlayer, "bingo.line");
+            QuestEvents.fire(serverPlayer, "bingo.line.row");
+        }
+        for (int i = 0; i < columns; i++) {
+            QuestEvents.fire(serverPlayer, "bingo.line");
+            QuestEvents.fire(serverPlayer, "bingo.line.column");
+        }
+        for (int i = 0; i < diagonals; i++) {
+            QuestEvents.fire(serverPlayer, "bingo.line");
+            QuestEvents.fire(serverPlayer, "bingo.line.diagonal");
+        }
+        if (hasCompletedCard())
+            QuestEvents.fire(serverPlayer, "bingo.card");
     }
 
     public GooeyButton filler() {
