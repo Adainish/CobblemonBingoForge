@@ -15,6 +15,6 @@ public class Adapters
             .disableHtmlEscaping()
             .registerTypeAdapter(ItemStack.class, new ItemStackAdapter())
             .registerTypeAdapter(PokemonProperties.class, new PokemonPropertiesAdapter(true))
-            .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+            .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
             .create();
 }
